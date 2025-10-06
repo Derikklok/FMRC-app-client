@@ -8,26 +8,92 @@ import {
   FieldSeparator,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+interface LoginResponse {
+  message: string;
+  user?: {
+    id: number;
+    username: string;
+  };
+}
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_SERVER}/users/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username,
+          password,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Login failed');
+      }
+
+      const data: LoginResponse = await response.json();
+      
+      // Check if the response contains an error message
+      if (data.message === "Invalid username or password" || !data.user) {
+        setError('Invalid username or password');
+        return;
+      }
+      
+      // Store user data in localStorage
+      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('authToken', 'authenticated'); // You can store actual JWT token here
+      
+      // Navigate to dashboard
+      navigate('/dashboard');
+    } catch (error) {
+      setError('Invalid username or password');
+      console.error('Login error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <form className={cn("flex flex-col gap-6", className)} {...props}>
+    <form className={cn("flex flex-col gap-6", className)} onSubmit={handleSubmit} {...props}>
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
           <h1 className="text-2xl font-bold">Login to your account</h1>
           <p className="text-muted-foreground text-sm text-balance">
-            Enter your email below to login to your account
+            Enter your username below to login to your account
           </p>
         </div>
+        {error && (
+          <div className="text-sm text-red-600 text-center bg-red-50 p-2 rounded">
+            {error}
+          </div>
+        )}
         <Field>
-          <FieldLabel htmlFor="email">Email</FieldLabel>
+          <FieldLabel htmlFor="username">Username</FieldLabel>
           <Input
-            id="email"
-            type="email"
-            placeholder="user@example.com"
+            id="username"
+            type="text"
+            placeholder="Enter your username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             required
           />
         </Field>
@@ -44,12 +110,16 @@ export function LoginForm({
           <Input
             id="password"
             type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             required
             placeholder="**********"
           />
         </Field>
         <Field>
-          <Button type="submit">Login</Button>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? "Signing in..." : "Login"}
+          </Button>
         </Field>
         <FieldSeparator>Or continue with</FieldSeparator>
         <Field>

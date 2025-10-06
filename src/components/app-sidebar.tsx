@@ -31,17 +31,17 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
+const staticData = {
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/dashboard",
       icon: IconDashboard,
+    },
+    {
+      title: "Customers",
+      url: "/customers",
+      icon: IconUsers,
     },
     {
       title: "Lifecycle",
@@ -149,6 +149,33 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  // Get user data from localStorage reactively
+  const getUserData = () => {
+    const userData = localStorage.getItem('user');
+    if (userData && userData !== 'undefined') {
+      try {
+        const user = JSON.parse(userData);
+        return {
+          name: user.username || 'User', // Show full username as-is
+          email: user.username || 'user@fmrc.com', // Use username as email (since it's an email format)
+          avatar: "/avatars/shadcn.jpg", // Default avatar
+        };
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        // Clear invalid data
+        localStorage.removeItem('user');
+      }
+    }
+    // Fallback data
+    return {
+      name: "User",
+      email: "user@fmrc.com",
+      avatar: "/avatars/shadcn.jpg",
+    };
+  };
+
+  const currentUser = getUserData();
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -160,19 +187,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             >
               <a href="#">
                 <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">Acme Inc.</span>
+                <span className="text-base font-semibold">FMRC Inc.</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavMain items={staticData.navMain} />
+        <NavDocuments items={staticData.documents} />
+        <NavSecondary items={staticData.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={currentUser} />
       </SidebarFooter>
     </Sidebar>
   )
