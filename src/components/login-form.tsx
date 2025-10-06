@@ -19,6 +19,12 @@ interface LoginResponse {
   };
 }
 
+interface ErrorResponse {
+  message: string;
+  error: string;
+  statusCode: number;
+}
+
 export function LoginForm({
   className,
   ...props
@@ -47,14 +53,17 @@ export function LoginForm({
       });
 
       if (!response.ok) {
-        throw new Error('Login failed');
+        // Handle error responses (401, 400, etc.)
+        const errorData: ErrorResponse = await response.json();
+        setError(errorData.message || 'Login failed');
+        return;
       }
 
       const data: LoginResponse = await response.json();
       
-      // Check if the response contains an error message
-      if (data.message === "Invalid username or password" || !data.user) {
-        setError('Invalid username or password');
+      // Additional validation for successful responses
+      if (!data.user) {
+        setError('Login failed - invalid response');
         return;
       }
       
