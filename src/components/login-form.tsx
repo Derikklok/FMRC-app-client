@@ -1,13 +1,13 @@
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 
 export function LoginForm({
   className,
@@ -24,7 +24,12 @@ export function LoginForm({
         </div>
         <Field>
           <FieldLabel htmlFor="email">Email</FieldLabel>
-          <Input id="email" type="email" placeholder="user@example.com" required />
+          <Input
+            id="email"
+            type="email"
+            placeholder="user@example.com"
+            required
+          />
         </Field>
         <Field>
           <div className="flex items-center">
@@ -36,7 +41,12 @@ export function LoginForm({
               Forgot your password?
             </a>
           </div>
-          <Input id="password" type="password" required placeholder="**********"/>
+          <Input
+            id="password"
+            type="password"
+            required
+            placeholder="**********"
+          />
         </Field>
         <Field>
           <Button type="submit">Login</Button>
@@ -61,5 +71,5 @@ export function LoginForm({
         </Field>
       </FieldGroup>
     </form>
-  )
+  );
 }
