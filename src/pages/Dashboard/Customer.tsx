@@ -27,7 +27,8 @@ import {
   IconTrash,
   IconUser,
   IconLoader2,
-  IconX
+  IconX,
+  IconDownload
 } from "@tabler/icons-react"
 import { useState, useEffect } from "react"
 
@@ -140,6 +141,54 @@ const deleteCustomer = async (id: number): Promise<void> => {
   } catch (error) {
     console.error('Error deleting customer:', error);
     throw error;
+  }
+};
+
+// Function to export customers to CSV
+const exportToCSV = (customers: Customer[]) => {
+  if (customers.length === 0) {
+    alert('No customers to export');
+    return;
+  }
+
+  // CSV headers
+  const headers = [
+    'Customer ID',
+    'Company Name', 
+    'Address',
+    'Contact Number',
+    'Added By (Username)',
+    'User ID'
+  ];
+
+  // Convert customers to CSV rows
+  const csvRows = [
+    headers.join(','),
+    ...customers.map(customer => [
+      `"${customer.customerId}"`,
+      `"${customer.companyName}"`,
+      `"${customer.address}"`,
+      `"${customer.contactNo}"`,
+      `"${customer.username}"`,
+      customer.userId.toString()
+    ].join(','))
+  ];
+
+  // Create CSV content
+  const csvContent = csvRows.join('\n');
+
+  // Create and download file
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  
+  if (link.download !== undefined) {
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `customers_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 };
 
@@ -434,6 +483,11 @@ const Customer = () => {
     }
   };
 
+  // Handle export to CSV
+  const handleExportCSV = () => {
+    exportToCSV(customers);
+  };
+
   // Show error state
   if (error) {
     return (
@@ -485,10 +539,20 @@ const Customer = () => {
                       Manage your forklift and machinery service customers
                     </p>
                   </div>
-                  <Button onClick={() => setIsAddDialogOpen(true)}>
-                    <IconPlus className="mr-2 h-4 w-4" />
-                    Add Customer
-                  </Button>
+                  <div className="flex gap-3">
+                    <Button 
+                      variant="outline" 
+                      onClick={handleExportCSV}
+                      disabled={customers.length === 0 || isLoading}
+                    >
+                      <IconDownload className="mr-2 h-4 w-4" />
+                      Export to CSV
+                    </Button>
+                    <Button onClick={() => setIsAddDialogOpen(true)}>
+                      <IconPlus className="mr-2 h-4 w-4" />
+                      Add Customer
+                    </Button>
+                  </div>
                 </div>
               </div>
 
